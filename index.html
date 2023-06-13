@@ -1,0 +1,256 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+</head>
+
+
+<style>
+    body {
+        background-color: grey;
+    }
+
+    #listSavedSettings,
+    #settingsTextearea {
+        display: none;
+    }
+
+    #altText {
+        font-size: 30px;
+        animation: color-change 2s infinite;
+        color: #0000FF;
+    }
+
+    .info {
+        font-size: 30px;
+        animation: color-change 2s infinite;
+        color: #0000FF;
+    }
+
+    @keyframes color-change {
+
+        0% {
+            font-size: 30px;
+        }
+
+        50% {
+            font-size: 28px;
+        }
+
+        100% {
+            font-size: 30px;
+        }
+    }
+</style>
+
+
+<body>
+    <p class="h1 text-center">Krunker Settings Preset</p>
+
+    <div class="text-center">
+        <button type="button" class="btn btn-primary me-2" onclick="set()">1) Set ur templates</button>
+        <button type="button" class="btn btn-primary me-2" onclick="applySett()">2) Apply ur template to a
+            settings</button>
+        <button type="button" class="btn btn-primary me-2" onclick="check()">Check ur templates (soon)</button>
+    </div>
+
+    <div id="listSavedSettings" class="text-center">
+        <div id="altText">1) Choose a default template here</div>
+        <ul>
+        </ul>
+    </div>
+
+    <div id="settingsTextearea" class="text-center">
+        <div class="info"></div>
+        <textarea style="height: 231px;width: 800px;"></textarea> <br>
+        <button type="button" class="btn btn-primary me-2" onclick="apply()">apply</button>
+    </div>
+
+    <script>
+        if (!localStorage.getItem("templatesSettings")) localStorage.setItem("templatesSettings", "[]");
+
+        let status = null;
+        const settingsTexteareaDiv = document.querySelector("#settingsTextearea");
+        const settingsTextearea = document.querySelector("textarea");
+        const info = document.querySelector("#settingsTextearea > div");
+        const listSavedSettings = document.querySelector("#listSavedSettings");
+        const ulSettingsList = document.querySelector('ul');
+
+
+        function set() {
+            status = "set";
+            infoManager("info", "Enter the desired settings (templates) here");
+            clearText();
+            settingsTexteareaDiv.style.display = "block";
+            listSavedSettings.style.display = "none";
+        }
+
+
+        function applySett() {
+            status = "applySett";
+            infoManager("info", "2) Past ur bad settings here");
+            clearText();
+            settingsTexteareaDiv.style.display = "block";
+            listSavedSettings.style.display = "block";
+
+            const listOfTemplates = JSON.parse(localStorage.getItem("templatesSettings"));
+
+            ulSettingsList.innerHTML = "";
+
+            for (let i = 0; i < listOfTemplates.length; i++) {
+                console.log(listOfTemplates[i])
+                const optionLabel = `Option ${i + 1}`;
+                const radioButton = document.createElement('input');
+                radioButton.type = 'radio';
+                radioButton.name = 'templateOption';
+                radioButton.value = JSON.stringify(listOfTemplates[i]);
+                radioButton.id = `templateOption${i + 1}`;
+
+                const label = document.createElement('label');
+                label.innerHTML = optionLabel;
+                label.setAttribute('for', `templateOption${i + 1}`);
+
+                ulSettingsList.appendChild(document.createElement('li'));
+                ulSettingsList.lastChild.appendChild(radioButton);
+                ulSettingsList.lastChild.appendChild(label);
+            }
+        }
+
+
+        function check() {
+            status = "check";
+            settingsTexteareaDiv.style.display = "none";
+            listSavedSettings.style.display = "block";
+
+            const listOfTemplates = JSON.parse(localStorage.getItem("templatesSettings"));
+
+            ulSettingsList.innerHTML = "";
+
+            for (let i = 0; i < listOfTemplates.length; i++) {
+                console.log(listOfTemplates[i])
+                const optionLabel = `Option ${i + 1}`;
+                const radioButton = document.createElement('input');
+                radioButton.type = 'radio';
+                radioButton.name = 'templateOption';
+                radioButton.value = JSON.stringify(listOfTemplates[i]);
+                radioButton.id = `templateOption${i + 1}`;
+
+                const label = document.createElement('label');
+                label.innerHTML = optionLabel;
+                label.setAttribute('for', `templateOption${i + 1}`);
+
+                ulSettingsList.appendChild(document.createElement('li'));
+                ulSettingsList.lastChild.appendChild(radioButton);
+                ulSettingsList.lastChild.appendChild(label);
+            }
+        }
+
+
+        function apply() {
+            console.log(status)
+            switch (status) {
+                case "set":
+                    if (!settingsTextearea.value) return infoManager("error", "enter a settings");
+
+                    const template = JSON.parse(settingsTextearea.value);
+                    const templatesStored = JSON.parse(localStorage.getItem("templatesSettings"));
+
+                    templatesStored.push(template);
+
+                    localStorage.setItem("templatesSettings", JSON.stringify(templatesStored));
+
+                    infoManager("succes", "template added with succes !");
+                    break;
+
+
+                case "applySett":
+                    const radioInputs = document.querySelectorAll('input[name="templateOption"]');
+                    let setTemplateValue = false;
+
+                    for (let i = 0; i < radioInputs.length; i++) {
+                        if (radioInputs[i].checked) {
+                            console.log(radioInputs[i].value)
+                            setTemplateValue = radioInputs[i].value;
+                            break;
+                        }
+                    }
+
+                    if (!setTemplateValue) return infoManager("error", "select 1 settings preset");
+                    if (!settingsTextearea.value) return infoManager("error", "u dont past any settings");
+
+                    const newSett = settingsTextearea.value;
+
+                    try {
+                        console.log(newSett);
+                        console.log(setTemplateValue);
+
+                        finalSettings = updateConfig(JSON.parse(newSett), JSON.parse(setTemplateValue));
+                    } catch (error) {
+                        infoManager("error", "we got an error " + error);
+                    }
+
+                    infoManager("succes", "check the alert :)");
+                    settingsTextearea.value = JSON.stringify(finalSettings);
+
+                    setTimeout(() => {
+                        if (confirm(
+                                "Click OK and ur new settings will be copy, or cancel for cancel")) {
+                            settingsTextearea.select();
+                            document.execCommand("copy");
+                        } else {
+                            return;
+                        }
+                    }, 25)
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        function updateConfig(config, updates) {
+            for (const key in updates) {
+                if (typeof updates[key] === 'object' && updates[key] !== null && !Array.isArray(updates[key])) {
+                    // Recursive call if the value is an object
+                    config[key] = updateConfig(config[key] || {}, updates[key]);
+                } else {
+                    // Assign the value directly
+                    config[key] = updates[key];
+                }
+            }
+            console.log(config)
+            return config;
+        }
+
+        function infoManager(type, message) {
+            switch (type) {
+                case "info":
+                    info.style.color = "#0000FF";
+                    info.innerText = message;
+                    break;
+
+                case "succes":
+                    info.style.color = "#00FF00";
+                    info.innerText = message;
+                    break;
+                case "error":
+                    info.style.color = "#FF0000";
+                    info.innerText = message;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        function clearText() {
+            document.querySelector("textarea").value = "";
+        }
+    </script>
+</body>
+
+</html>
